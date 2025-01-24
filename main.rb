@@ -15,7 +15,7 @@ end
 
 #try for both one and two
 #loading the roll file
-roll_file = 'data/rolls_1.json'
+roll_file = 'data/rolls_2.json'
 rolls = JSON.parse(File.read(roll_file))
 
 #setting up the players
@@ -26,6 +26,41 @@ player4 = Player.new("Sweedal")
 
 #load the players to an array
 players = [player1, player2, player3, player4]
+
+
+def winners(players, board)
+
+    #displaying the winners
+    i = 1
+    sorted_winners = players.sort! { |a, b| b.money <=> a.money }
+    puts "---------------------------------------------------------------------------------------------------------------------------".colorize(background: :blue)
+    puts ""
+    puts "Game Over".colorize(background: :red)
+    puts "\nThanks for playing Woven Monopoly--a game where dice rolls are entirely fixed so you have absolutely no chances of winning through luck.\n \nThe winner of this game is \u{1F3C6}#{sorted_winners[0].name}\u{1F3C6} and the loser of this game is \u{1F61E}#{sorted_winners[3].name}\u{1F61E}!\n \nHere are the final standings: \n ".bold
+    
+    max_name_length = sorted_winners.map{ |element| element.name.length}.max
+    max_money_length = sorted_winners.map{ |element| element.money.to_s.length}.max
+    
+
+    puts "Final Standings:".colorize(background: :magenta)
+    puts ""
+    sorted_winners.each_with_index do |element, index|
+        puts " #{index + 1}. #{element.name.ljust(max_name_length)}  ||  Remaining Money:  #{element.money.to_s.rjust(max_money_length)}   ||  Current Space:  #{board[element.position].name}  "
+    end
+    puts ""
+    puts "Properties Owned:".colorize(background: :magenta)
+    puts ""
+    sorted_winners.each_with_index do |element, index|
+        puts " #{index + 1}. #{element.name.ljust(max_name_length)}  :  #{element.properties.join(', ')} "
+    end
+    puts ""
+
+
+
+    puts "---------------------------------------------------------------------------------------------------------------------------".colorize(background: :blue)
+
+end
+
 
 
 #current player index
@@ -71,11 +106,14 @@ while players[i].money > 0
             players[board[players[i].position].owner].money += board[players[i].position].price
         else 
         #if the money is less than rent? Maybe we can like go bankrupt and say game over bcs technically they dont have money to pay rent! Game over and exit the loop??
+            puts "---------------------------------------------------------------------------------------------------------------------------".colorize(background: :blue)
+            puts ""
+            puts "Important Message".colorize(background: :red) 
             puts ""
             puts "Hi #{players[i].name}, technically you owe #{players[board[players[i].position].owner].name} another $#{players[i].money.abs}.\nThey are kind enough to end the game without putting you in generational debt. \nThe game is now over! You lost, boo hoo :(".bold
+            puts ""
             players[i].money = 0
-    
-            puts "game over"
+            winners(players, board)
             exit
         end
     end
@@ -89,6 +127,11 @@ while players[i].money > 0
     end
 end
 
-#the while loop ended so game over
+#calls function
+winners(players, board)
 
-puts "game over"
+#to dos
+#move the while statement to functions to increase code readability
+#maybe make it so the user types in which roll they want to use? 
+#Better annotations-rn its super crowded and hard to read
+#print the user properties since we have an array of properties for each user??
