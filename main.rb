@@ -169,7 +169,7 @@ while true
             rolls = load_roll
             break
         elsif input == 2
-            puts "You're super curious about this game, arent you!\nI'll let you enter any amount of rolls and we'll play the game using those dice rolls :)"
+            puts "You love this game, don't you?!\nI'll let you enter any amount of rolls and we'll play the game using those dice rolls :)"
             rolls = []
             while true
                 print "Please enter your dice rolls(remember 1-6)! Type in 'done' when you're ready: "
