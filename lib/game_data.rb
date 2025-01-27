@@ -8,6 +8,7 @@ def load_board
     for i in 1..(board.length-1) do
         board[i].owned = false
         board[i].owner = -1
+        board[i].rent = board[i].price/2.0
     end
 
     return board

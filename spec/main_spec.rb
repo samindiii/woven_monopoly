@@ -60,7 +60,7 @@ RSpec.describe do
             inital_money = @players[1].money
             move_player(@players[1],@board,@rolls[1])
             pay_rent(@players,@board,i=1)
-            expect(@players[1].money).to eq( inital_money - @board[@players[1].position].price)
+            expect(@players[1].money).to eq( inital_money - @board[@players[1].position].rent)
 
         end
 
@@ -70,7 +70,7 @@ RSpec.describe do
             pay_rent(@players,@board,i=1)
             #player 0's money was 13 after buying the property. After player 0 
             #paid rent, their money increased back to 16
-            expect(@players[0].money).to eq(16)
+            expect(@players[0].money).to eq(14.5)
         end
 
     end

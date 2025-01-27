@@ -4,6 +4,8 @@ require 'colorize'
 require_relative 'lib/player'
 require_relative 'lib/game_data.rb'
 
+#global variables
+$colours = [['Brown',0], ['Red',0],['Green',0],['Blue',0]]
 
 #method for getting user input based on certain options
 def user_input(options)
@@ -80,11 +82,36 @@ end
 
 #this is called if a player lands on an owned property
 def pay_rent(players,board,i)
+    colour_count = 0 
+
+    case board[players[i].position].colour
+
+    when "Brown"
+        colour_count = $colours[0][1]
+    
+    when "Red"
+        colour_count = $colours[1][1]
+
+    when "Green"
+        colour_count = $colours[2][1]
+    
+    when "Blue"
+        colour_count = $colours[3][1]
+    end
+
+
     #if player can afford rent, he should pay rent to the owner of the space (this owner's money increases by price)
-    if players[i].money >= board[players[i].position].price
-        puts "#{board[players[i].position].name} is owned by #{players[board[players[i].position].owner].name} so #{players[i].name} has to pay $#{ board[players[i].position].price} rent to #{players[board[players[i].position].owner].name}"
-        players[i].money -= board[players[i].position].price
-        players[board[players[i].position].owner].money += board[players[i].position].price
+    #rent is doubled if the colour_count == 2
+    if players[i].money >= board[players[i].position].rent
+        if colour_count == 2
+            puts "#{board[players[i].position].name} is owned by #{players[board[players[i].position].owner].name} so #{players[i].name} has to pay $#{ board[players[i].position].price} rent to #{players[board[players[i].position].owner].name}"
+            players[i].money -= board[players[i].position].price #rent is now the same as property price as it is doubled!
+            players[board[players[i].position].owner].money += board[players[i].position].price
+        else 
+            puts "#{board[players[i].position].name} is owned by #{players[board[players[i].position].owner].name} so #{players[i].name} has to pay $#{ board[players[i].position].rent} rent to #{players[board[players[i].position].owner].name}"
+            players[i].money -= board[players[i].position].rent
+            players[board[players[i].position].owner].money += board[players[i].position].rent
+        end
 
     #if they cannot afford it, player goes bankrupt and game is over
     else 
@@ -108,6 +135,22 @@ def purchase_property(players,board,i)
         board[players[i].position].owned = true
         players[i].properties << board[players[i].position].name
         board[players[i].position].owner = i
+
+        #updating colours array
+        case board[players[i].position].colour
+
+        when "Brown"
+            $colours[0][1] += 1
+        
+        when "Red"
+            $colours[1][1] += 1
+
+        when "Green"
+            $colours[2][1] += 1
+        
+        when "Blue"
+            $colours[3][1] += 1
+        end
     
     #if they cannot afford it: a game log is printed and the player stays there
     elsif players[i].money < board[players[i].position].price
@@ -152,13 +195,19 @@ def start_game(players, board, rolls)
         #break condition if the player pays for the property and has $0 left
         elsif board[players[i].position].owned == false
             purchase_property(players,board,i)
-            break if players[i].money == 0
+            if players[i].money <= 0
+                players[i].money = 0
+                break 
+            end
         
         #player has to pay rent if property is owned 
         #conditional AND statement to ensure player does not pay rent to himself
         elsif board[players[i].position].owned == true && board[players[i].position].owner != i
             pay_rent(players,board,i)
-            break if players[i].money == 0
+            if players[i].money <= 0
+                players[i].money = 0
+                break 
+            end
         end
 
         x += 1
@@ -167,7 +216,7 @@ def start_game(players, board, rolls)
         #this is mainly for custom rolls 
         #if the user only enters 4 nums and the game requires more
         #the rolls will iterate over and over again to continue the game until win condition is met
-        if x == rolls.length - 1
+        if x == rolls.length 
             x = 0
         end
 
@@ -193,6 +242,9 @@ def main
     while true
         #load the board
         board = load_board
+        for x in $colours
+            x[1]= 0
+        end
 
         #load players
         player_names = ["Peter","Billy","Charlotte","Sweedal"]
