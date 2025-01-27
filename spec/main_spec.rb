@@ -7,7 +7,7 @@ require 'json'
 require 'colorize'
 
 RSpec.describe do
-
+    #loads the attributes to be used
     before do
         @board = load_board
         @rolls =  [5, 5, 6, 2, 1, 5, 1, 2]
@@ -15,6 +15,8 @@ RSpec.describe do
 
     end
 
+    #does the purchase_property method add property to player, reduce their money 
+    #and change the property ownership to player
     describe 'purchase_property' do 
         it 'adds the property to the players property array' do
             allow(STDOUT).to receive(:puts)
@@ -45,7 +47,7 @@ RSpec.describe do
         end
     end
 
-
+    #does the pay_rent method reduce player money and pay rent to the owner of the space
     describe 'pay_rent' do
         before do 
             allow(STDOUT).to receive(:puts)
@@ -72,7 +74,9 @@ RSpec.describe do
         end
 
     end
-        
+    
+    #does the move_player method move the player based on the dice roll? 
+    #is it accurate in moving?
     describe 'move_player' do
         it 'moves the player based on the dice roll' do
             initial_position = @players[0].position

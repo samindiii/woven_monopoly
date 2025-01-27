@@ -6,6 +6,7 @@ require 'json'
 require 'colorize'
 
 RSpec.describe do
+    #does the board get loaded and is the first name == go
     describe 'load_board' do
         it 'loads the board correctly' do
             board = load_board
@@ -15,6 +16,8 @@ RSpec.describe do
         end
     end
 
+    #are the players from the player class? 
+    #is the first player name the one i defined
     describe 'create_players' do
         it 'creates players correctly' do
             players = create_players(%w[x y z w])
@@ -24,6 +27,8 @@ RSpec.describe do
         end
     end
     
+    #is the roll file loaded appropriately
+    #does the correct message get printed to the terminal
     describe 'load_roll' do
         it 'recieves valid input and loads roll file 1' do
             allow($stdin).to receive(:gets).and_return("1\n")

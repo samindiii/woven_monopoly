@@ -1,3 +1,5 @@
+#loads the json file and adds new attributes to the board
+#returns parsed board
 def load_board 
     board_file = 'data/board.json'
     board = JSON.parse(File.read(board_file), object_class: OpenStruct)
@@ -11,12 +13,16 @@ def load_board
     return board
 end
 
+#prompts the user to decide between roll 1 or 2 and then uses that roll file for the game
+#returns parsed file
 def load_roll 
     puts "---------------------------------------------------------------------------------------------------------------------------".colorize(background: :blue)
     puts "\n \n"
     puts "Hi! Welcome to Woven Monopoly. I have two roll files! Please enter the index of the roll file you'd like to use (1 or 2)"
     rolls = nil
     options = ['Roll 1', 'Roll 2']
+
+    #loops until valid option is selected
     loop do 
         options.each.with_index(1) do |option, index|
             puts "#{index}. #{option}"
@@ -43,6 +49,8 @@ def load_roll
     rolls
 end 
 
+#creates the players for the game using the Player class
+#this allows more players to be added if needed
 def create_players (player_names)
     temp_players = []
     for x in player_names 
