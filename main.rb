@@ -4,6 +4,46 @@ require 'colorize'
 require_relative 'lib/player'
 require_relative 'lib/game_data.rb'
 
+def purchase_property(players,board,i)
+    if players[i].money >= board[players[i].position].price 
+        puts "#{players[i].name} purchased #{board[players[i].position].name} for $#{ board[players[i].position].price}"
+        players[i].money -= board[players[i].position].price
+        board[players[i].position].owned = true
+        players[i].properties << board[players[i].position].name
+        board[players[i].position].owner = i
+    elsif players[i].money < board[players[i].position].price
+        puts "#{players[i].name} cannot afford #{board[players[i].position].name}"
+    end
+end
+
+def pay_rent(players,board,i)
+
+    if players[i].money >= board[players[i].position].price
+        puts "#{board[players[i].position].name} is owned by #{players[board[players[i].position].owner].name} so #{players[i].name} has to pay $#{ board[players[i].position].price} rent to #{players[board[players[i].position].owner].name}"
+        players[i].money -= board[players[i].position].price
+        players[board[players[i].position].owner].money += board[players[i].position].price
+
+    else 
+        puts "#{players[i].name} landed on #{board[players[i].position].name} but cannot afford the rent! This means they are bankrupt"
+        puts "---------------------------------------------------------------------------------------------------------------------------".colorize(background: :blue)
+        puts ""
+        puts "Important Message".colorize(background: :red) 
+        puts ""
+        puts "Hi #{players[i].name}, technically you owe #{players[board[players[i].position].owner].name} another $#{players[i].money.abs}.\nThey are kind enough to end the game without putting you in generational debt. \nThe game is now over! You lost, boo hoo :(".bold
+        puts ""
+        players[i].money = 0
+    end
+end
+
+def move_player(player,board,roll)
+    player.position += roll
+        
+    if player.position >= board.length
+        difference = player.position - board.length 
+        player.position = difference
+    end
+end
+
 def user_input(options)
     options.each.with_index(1) do |option, index|
         puts "#{index}. #{option}"
@@ -24,7 +64,27 @@ def print_standings(players,board)
     end
 end
 
-
+def end_turn (players,board,turn)
+    puts " \nTurn #{turn} is over!\n"
+    options = ["View Standings", "Continue Game"]
+    puts "Would you like to view the current standings or continue the game? "
+    loop do 
+        input = user_input(options)
+        if input == 1
+            puts ""
+            puts "Current Standings:".colorize(background: :magenta)
+            print_standings(players,board)
+            puts "\nPress enter to continue the game.. "
+            gets
+            break
+        elsif input == 2
+            break
+        else 
+            puts "You didn't enter a valid option. Please try again!"
+        end 
+    end
+end
+ 
 def winners(players, board)
 
     #displaying the winners
@@ -58,14 +118,7 @@ def start_game(players, board, rolls)
     puts "Starting turn 1..."
 
     while players[i].money > 0
-     
-        players[i].position += rolls[x]
-        
-        if players[i].position >= board.length
-            difference = players[i].position - board.length 
-            players[i].position = difference
-        end
-
+        move_player(players[i],board,rolls[x])
         puts "#{players[i].name} rolled a #{rolls[x]} and landed on #{board[players[i].position].name} "
 
         if  board[players[i].position].name == "GO"
@@ -73,36 +126,15 @@ def start_game(players, board, rolls)
             puts "#{players[i].name} recieved a $1 for landing on GO!"
         
         elsif board[players[i].position].owned == false
-            if players[i].money >= board[players[i].position].price 
-                puts "#{players[i].name} purchased #{board[players[i].position].name} for $#{ board[players[i].position].price}"
-                players[i].money -= board[players[i].position].price
-                board[players[i].position].owned = true
-                players[i].properties << board[players[i].position].name
-                board[players[i].position].owner = i
-                break if players[i].money == 0
-            elsif players[i].money < board[players[i].position].price
-                puts "#{players[i].name} cannot afford #{board[players[i].position].name}"
-            end
+
+            purchase_property(players,board,i)
+            break if players[i].money == 0
 
         elsif board[players[i].position].owned == true && board[players[i].position].owner != i
 
-            if players[i].money >= board[players[i].position].price
-                puts "#{board[players[i].position].name} is owned by #{players[board[players[i].position].owner].name} so #{players[i].name} has to pay $#{ board[players[i].position].price} rent to #{players[board[players[i].position].owner].name}"
-                players[i].money -= board[players[i].position].price
-                players[board[players[i].position].owner].money += board[players[i].position].price
-                break if players[i].money == 0
-            else 
-                puts "#{players[i].name} landed on #{board[players[i].position].name} but cannot afford the rent! This means they are bankrupt"
-                puts "---------------------------------------------------------------------------------------------------------------------------".colorize(background: :blue)
-                puts ""
-                puts "Important Message".colorize(background: :red) 
-                puts ""
-                puts "Hi #{players[i].name}, technically you owe #{players[board[players[i].position].owner].name} another $#{players[i].money.abs}.\nThey are kind enough to end the game without putting you in generational debt. \nThe game is now over! You lost, boo hoo :(".bold
-                puts ""
-                players[i].money = 0
-                break
-                
-            end
+            pay_rent(players,board,i)
+            break if players[i].money == 0
+
         end
 
         x += 1
@@ -111,87 +143,71 @@ def start_game(players, board, rolls)
         if x == rolls.length - 1
             x = 0
         end
-
-        #after every turn, print the standings
+        
         if i == 4
-            puts " \nTurn #{turn} is over!\n"
-            options = ["View Standings", "Continue Game"]
-            puts "Would you like to view the current standings or continue the game? "
-            loop do 
-                input = user_input(options)
-                if input == 1
-                    puts ""
-                    puts "Current Standings:".colorize(background: :magenta)
-                    print_standings(players,board)
-                    puts "\nPress enter to continue the game.. "
-                    gets
-                    break
-                elsif input == 2
-                    break
-                else 
-                    puts "You didn't enter a valid option. Please try again!"
-                end 
-            end
-
+            end_turn(players,board,turn)
             i = 0
             turn +=1
             puts ""
             puts "Starting Turn #{turn}..."
         end
-    
     end
 end
 
+def main
+    rolls = load_roll 
 
-rolls = load_roll 
-while true
+    while true
 
-    board = load_board
+        board = load_board
 
-    #load players
-    player_names = ["Peter","Billy","Charlotte","Sweedal"]
-    players = create_players(player_names) 
+        #load players
+        player_names = ["Peter","Billy","Charlotte","Sweedal"]
+        players = create_players(player_names) 
 
-    puts "The game data has been loaded! Press any key to start the amazing game of Woven Monopoly \n"
-    gets
-    puts "Printing Game Logs..."
+        puts "The game data has been loaded! Press any key to start the amazing game of Woven Monopoly \n"
+        gets
+        puts "Printing Game Logs..."
 
-    start_game(players, board, rolls)
-    puts "The game has finished as a player has reached $0. Press enter to view the final standings..."
-    gets 
-    winners(players, board)
-    puts "\n Would you like to play another game or exit?"
-    options = ["Another Game","Another game with custom rolls", "Exit"]
-    input = user_input(options)
-    loop do
-        if input == 1
-            puts "Let me load you into another game..."
-            rolls = load_roll
-            break
-        elsif input == 2
-            puts "You love this game, don't you?!\nI'll let you enter any amount of rolls and we'll play the game using those dice rolls :)"
-            rolls = []
-            while true
-                print "Please enter your dice rolls(remember 1-6)! Type in 'done' when you're ready: "
-                new_rolls = gets.chomp  
-                break if new_rolls.downcase == "done" 
-                if new_rolls.to_i.to_s == new_rolls && new_rolls.to_i.between?(1, 6)
-                    rolls.push(new_rolls.to_i)  
-                else
-                    puts "Sorry, I can't add that:( Please enter a number between 1-6!!"
+        start_game(players, board, rolls)
+        puts "The game has finished as a player has reached $0. Press enter to view the final standings..."
+        gets 
+        winners(players, board)
+        puts "\n Would you like to play another game or exit?"
+        options = ["Another Game","Another game with custom rolls", "Exit"]
+        input = user_input(options)
+        loop do
+            if input == 1
+                puts "Let me load you into another game..."
+                rolls = load_roll
+                break
+            elsif input == 2
+                puts "You love this game, don't you?!\nI'll let you enter any amount of rolls and we'll play the game using those dice rolls :)"
+                rolls = []
+                while true
+                    print "Please enter your dice rolls(remember 1-6)! Type in 'done' when you're ready: "
+                    new_rolls = gets.chomp  
+                    break if new_rolls.downcase == "done" 
+                    if new_rolls.to_i.to_s == new_rolls && new_rolls.to_i.between?(1, 6)
+                        rolls.push(new_rolls.to_i)  
+                    else
+                        puts "Sorry, I can't add that:( Please enter a number between 1-6!!"
+                    end
                 end
+                puts "You've entered the following dice rolls #{rolls}"
+                puts "Let me load you into another game!!!" 
+                break
+            elsif input == 3
+                puts "Thank you so much for playing my game!!"
+                exit
+            else 
+                puts "That input was not valid"
             end
-            puts "You've entered the following dice rolls #{rolls}"
-            puts "Let me load you into another game!!!" 
-            break
-        elsif input == 3
-            puts "Thank you so much for playing my game!!"
-            exit
-        else 
-            puts "That input was not valid"
         end
     end
 end
     
-
+if __FILE__ == $0
+    main 
+end
 
